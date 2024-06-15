@@ -7,16 +7,16 @@ trigger:
 - main
 
 pool:
-  vmImage: ubuntu-latest
+  vmImage: 'ubuntu-latest'  # Options: 'macOS-latest', 'windows-latest'
 
 steps:
 - task: Maven@3
   inputs:
-    mavenPomFile: 'pom.xml'
-    mavenOptions: '-Xmx3072m'
-    javaHomeOption: 'JDKVersion'
-    jdkVersionOption: '1.8'
-    jdkArchitectureOption: 'x64'
-    publishJUnitResults: true
-    testResultsFiles: '**/surefire-reports/TEST-*.xml'
-    goals: 'package'
+    mavenPomFile: 'pom.xml'  # Adjust path if your pom.xml is in a subdirectory
+    mavenOptions: '-Xmx3072m'  # JVM options
+    javaHomeOption: 'JDKVersion'  # Use JDK version installed on the agent
+    jdkVersionOption: '1.8'  # JDK version 1.8
+    jdkArchitectureOption: 'x64'  # JDK architecture
+    publishJUnitResults: true  # Publish JUnit test results
+    testResultsFiles: '**/surefire-reports/TEST-*.xml'  # Test results pattern
+    goals: 'package'  # Maven goals to execute
