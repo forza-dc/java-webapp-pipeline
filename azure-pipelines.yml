@@ -19,9 +19,16 @@ steps:
     testResultsFiles: '**/surefire-reports/TEST-*.xml'  # Test results pattern
     goals: 'package'  # Maven goals to execute
 
+# Debugging step to list the contents of the target directory
+- script: |
+    echo "Listing contents of the target directory:"
+    ls -al $(System.DefaultWorkingDirectory)/target
+  displayName: 'List target directory contents'
+
+# Correct the path to the WAR file
 - task: PublishPipelineArtifact@1
   inputs:
-    targetPath: '$(System.DefaultWorkingDirectory)/target/*.war'  # Path to your WAR file
+    targetPath: '$(System.DefaultWorkingDirectory)/target'  # Directory containing the WAR file
     artifactName: 'forza-java-webapp'  # Name of the artifact to publish
 
 - task: DownloadPipelineArtifact@2
