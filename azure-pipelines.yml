@@ -37,18 +37,36 @@ steps:
     artifactName: 'forza-java-webapp'
     targetPath: '$(System.ArtifactsDirectory)/webapp'
 
+# Debugging step to list the contents of the webapp directory
+- script: |
+    echo "Listing contents of the webapp directory:"
+    ls -al $(System.ArtifactsDirectory)/webapp
+  displayName: 'List webapp directory contents'
+
 - task: CopyFiles@2
   inputs:
     SourceFolder: '$(System.ArtifactsDirectory)/webapp'
     Contents: '**/*.war'
     TargetFolder: '$(Build.ArtifactStagingDirectory)'
 
+# Debugging step to list the contents of the artifact staging directory
+- script: |
+    echo "Listing contents of the artifact staging directory:"
+    ls -al $(Build.ArtifactStagingDirectory)
+  displayName: 'List artifact staging directory contents'
+
 - task: Bash@3
   inputs:
     targetType: 'inline'
     script: |
       WAR_FILE=$(find $(Build.ArtifactStagingDirectory) -name "*.war")
-      echo "Deploying $WAR_FILE to Tomcat..."
-      curl -u $(TomcatUsername):$(TomcatPassword) \
-        -T "$WAR_FILE" \
-        "http://localhost:8080/manager/text/deploy?path=/forza-java-webapp&update=true"
+      echo "WAR file to deploy: $WAR_FILE"
+      if [ -f "$WAR_FILE" ]; then
+        echo "Deploying $WAR_FILE to Tomcat..."
+        curl -u $(TomcatUsername):$(TomcatPassword) \
+          -T "$WAR_FILE" \
+          "http://localhost:8080/manager/text/deploy?path=/forza-java-webapp&update=true"
+      else
+        echo "WAR file not found!"
+        exit 1
+      fi
