@@ -16,8 +16,13 @@ steps:
     testResultsFiles: '**/surefire-reports/TEST-*.xml'  # Test results pattern
     goals: 'package'  # Maven goals to execute
 
+# List the contents of the target directory to verify the WAR file exists
+- script: |
+    ls -la $(System.DefaultWorkingDirectory)/target
+  displayName: 'List target directory contents'
+
 - task: PublishPipelineArtifact@1
   inputs:
-    targetPath: '$(System.DefaultWorkingDirectory)/target/*.war'  # Path to your WAR file
+    targetPath: '$(System.DefaultWorkingDirectory)/target/*.war'  # Correct path to your WAR file
     artifactName: 'forza-java-webapp'  # Name of the artifact to publish
     publishLocation: 'pipeline'
