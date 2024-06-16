@@ -4,6 +4,9 @@ trigger:
 pool:
   vmImage: 'ubuntu-latest'  # Options: 'macOS-latest', 'windows-latest'
 
+variables:
+- group: 'Tomcat Login Info'  # Reference the variable group
+
 steps:
 - task: Maven@3
   inputs:
@@ -20,3 +23,26 @@ steps:
   inputs:
     targetPath: '$(System.DefaultWorkingDirectory)/target/*.war'  # Path to your WAR file
     artifactName: 'forza-java-webapp'  # Name of the artifact to publish
+
+- task: DownloadPipelineArtifact@2
+  inputs:
+    buildType: 'current'
+    artifactName: 'forza-java-webapp'
+    targetPath: '$(System.ArtifactsDirectory)/webapp'
+
+- task: CopyFiles@2
+  inputs:
+    SourceFolder: '$(System.ArtifactsDirectory)/webapp'
+    Contents: '**/*.war'
+    TargetFolder: '$(Build.ArtifactStagingDirectory)'
+
+- task: Bash@3
+  inputs:
+    targetType: 'inline'
+    script: |
+      WAR_FILE=$(find $(Build.ArtifactStagingDirectory) -name "*.war")
+      echo "Deploying $WAR_FILE to Tomcat..."
+      curl -u $(TomcatUsername):$(TomcatPassword) \
+        -T "$WAR_FILE" \
+        "http://your-tomcat-server:8080/manager/text/deploy?path=/your-app-context&update=true"
+
