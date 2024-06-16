@@ -59,7 +59,13 @@ steps:
   inputs:
     targetType: 'inline'
     script: |
-      WAR_FILE=$(find $(Build.ArtifactStagingDirectory) -name "*.war")
+      # List files to verify paths
+      echo "Listing all files in the build artifact staging directory:"
+      ls -al $(Build.ArtifactStagingDirectory)
+
+      # Define the expected WAR file path
+      WAR_FILE=$(find $(Build.ArtifactStagingDirectory) -name "*.war" | head -n 1)
+      
       echo "WAR file to deploy: $WAR_FILE"
       if [ -f "$WAR_FILE" ]; then
         echo "Deploying $WAR_FILE to Tomcat..."
@@ -70,3 +76,4 @@ steps:
         echo "WAR file not found!"
         exit 1
       fi
+
