@@ -44,5 +44,4 @@ steps:
       echo "Deploying $WAR_FILE to Tomcat..."
       curl -u $(TomcatUsername):$(TomcatPassword) \
         -T "$WAR_FILE" \
-        "http://your-tomcat-server:8080/manager/text/deploy?path=/your-app-context&update=true"
-
+        "http://localhost:8080/manager/text/deploy?path=/forza-java-webapp&update=true"
