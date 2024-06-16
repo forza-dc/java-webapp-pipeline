@@ -23,6 +23,6 @@ steps:
 
 - task: PublishPipelineArtifact@1
   inputs:
-    targetPath: '$(System.DefaultWorkingDirectory)/target/*.war'  # Correct path to your WAR file
+    targetPath: '$(System.DefaultWorkingDirectory)/target/helloworld.war'  # Correct path to your WAR file
     artifactName: 'forza-java-webapp'  # Name of the artifact to publish
     publishLocation: 'pipeline'
