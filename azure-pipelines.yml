@@ -4,9 +4,6 @@ trigger:
 pool:
   vmImage: 'ubuntu-latest'  # Options: 'macOS-latest', 'windows-latest'
 
-variables:
-- group: 'Tomcat Login Info'  # Reference the variable group
-
 steps:
 - task: Maven@3
   inputs:
@@ -19,61 +16,8 @@ steps:
     testResultsFiles: '**/surefire-reports/TEST-*.xml'  # Test results pattern
     goals: 'package'  # Maven goals to execute
 
-# Debugging step to list the contents of the target directory
-- script: |
-    echo "Listing contents of the target directory:"
-    ls -al $(System.DefaultWorkingDirectory)/target
-  displayName: 'List target directory contents'
-
-# Correct the path to the WAR file
 - task: PublishPipelineArtifact@1
   inputs:
-    targetPath: '$(System.DefaultWorkingDirectory)/target'  # Directory containing the WAR file
+    targetPath: '$(System.DefaultWorkingDirectory)/target/*.war'  # Path to your WAR file
     artifactName: 'forza-java-webapp'  # Name of the artifact to publish
-
-- task: DownloadPipelineArtifact@2
-  inputs:
-    buildType: 'current'
-    artifactName: 'forza-java-webapp'
-    targetPath: '$(System.ArtifactsDirectory)/webapp'
-
-# Debugging step to list the contents of the webapp directory
-- script: |
-    echo "Listing contents of the webapp directory:"
-    ls -al $(System.ArtifactsDirectory)/webapp
-  displayName: 'List webapp directory contents'
-
-- task: CopyFiles@2
-  inputs:
-    SourceFolder: '$(System.ArtifactsDirectory)/webapp'
-    Contents: '**/*.war'
-    TargetFolder: '$(Build.ArtifactStagingDirectory)'
-
-# Debugging step to list the contents of the artifact staging directory
-- script: |
-    echo "Listing contents of the artifact staging directory:"
-    ls -al $(Build.ArtifactStagingDirectory)
-  displayName: 'List artifact staging directory contents'
-
-- task: Bash@3
-  inputs:
-    targetType: 'inline'
-    script: |
-      # List files to verify paths
-      echo "Listing all files in the build artifact staging directory:"
-      ls -al $(Build.ArtifactStagingDirectory)
-
-      # Define the expected WAR file path
-      WAR_FILE=$(find $(Build.ArtifactStagingDirectory) -name "*.war" | head -n 1)
-      
-      echo "WAR file to deploy: $WAR_FILE"
-      if [ -f "$WAR_FILE" ]; then
-        echo "Deploying $WAR_FILE to Tomcat..."
-        curl -u $(TomcatUsername):$(TomcatPassword) \
-          -T "$WAR_FILE" \
-          "http://localhost:8080/manager/text/deploy?path=/forza-java-webapp&update=true"
-      else
-        echo "WAR file not found!"
-        exit 1
-      fi
-
+    publishLocation: 'pipeline'
