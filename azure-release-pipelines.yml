@@ -1,28 +1,25 @@
-stages:
-- stage: 'Deploy'
-  jobs:
-  - job: 'DeployToAKS'
-    pool:
-      vmImage: 'ubuntu-latest'
-    steps:
-    - checkout: self
+trigger:
+- main
 
-    - task: Docker@2
-      inputs:
-        containerRegistry: 'forzacontainerregistry.azurecr.io'
-        repository: 'my-java-app'
-        command: 'buildAndPush'
-        Dockerfile: '**/Dockerfile'
-        tags: |
-          $(Build.BuildId)
+pool:
+  vmImage: 'ubuntu-latest'
 
-    - task: Kubernetes@1
-      displayName: 'kubectl apply'
-      inputs:
-        connectionType: 'Azure Resource Manager'
-        azureSubscriptionEndpoint: 'ForzaAKSServiceConnection'
-        azureResourceGroup: 'Forza-Resource-Group-10'
-        kubernetesCluster: 'ForzaAKSCluster'
-        namespace: 'default'
-        command: 'apply'
-        arguments: '-f $(System.DefaultWorkingDirectory)/kubernetes-manifests/'
+steps:
+- task: Docker@2
+  inputs:
+    containerRegistry: 'forzacontainerregistry.azurecr.io'
+    repository: 'my-java-app'
+    command: 'buildAndPush'
+    Dockerfile: '$(System.DefaultWorkingDirectory)/Dockerfile'
+    tags: |
+      $(Build.BuildId)
+
+- task: Kubernetes@1
+  inputs:
+    azureSubscriptionEndpoint: 'ForzaAzureRMConnection'
+    resourceGroupName: 'Forza-Resource-Group-10'
+    kubernetesCluster: 'ForzaAKSCluster'
+    namespace: 'default'
+    command: 'apply'
+    useClusterAdmin: false
+    arguments: '-f $(System.DefaultWorkingDirectory)/kubernetes-manifests/'
