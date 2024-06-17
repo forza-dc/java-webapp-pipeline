@@ -2,19 +2,30 @@ trigger:
   branches:
     include:
       - main
+
 pool:
   vmImage: 'ubuntu-latest'
+
 steps:
-  - task: UseJavaVersion@1
-    inputs:
-      versionSpec: '11'
-      jdkArchitectureOption: 'x64'
-      jdkSourceOption: 'PreInstalled'
-      jdkPathOption: '$(JAVA_HOME)'
-  - script: |
-      ./gradlew build
-    displayName: 'Build with Gradle'
-  - task: PublishPipelineArtifact@1
-    inputs:
-      targetPath: '$(System.DefaultWorkingDirectory)/build/libs'
-      artifact: 'drop'
+- task: UseJava@1
+  inputs:
+    versionSpec: '11'
+    jdkArchitectureOption: 'x64'
+    jdkSourceOption: 'PreInstalled'
+    jdkVersionOption: '11'
+    checkLatest: true
+
+- task: Docker@2
+  inputs:
+    command: 'buildAndPush'
+    repository: 'your-docker-repository'
+    dockerfile: '**/Dockerfile'
+    containerRegistry: 'ForzaDockerRegistryConnection'
+    tags: |
+      $(Build.BuildId)
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    pathToPublish: '$(Build.ArtifactStagingDirectory)'
+    artifactName: 'drop'
+    publishLocation: 'Container'
