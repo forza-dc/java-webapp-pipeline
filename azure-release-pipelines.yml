@@ -8,15 +8,11 @@ stages:
     jobs:
       - job: DeployToDev
         steps:
-          - task: UsePythonVersion@0
-            inputs:
-              versionSpec: '3.x'
-            displayName: 'Use Python 3.x'
           - script: |
               terraform init
               terraform apply -auto-approve
             workingDirectory: Infra-Folder
-            displayName: 'Provision Infrastructure with Terraform'
+            displayName: 'Provision Infrastructure'
           - task: Kubernetes@1
             inputs:
               connectionType: 'Azure Resource Manager'
@@ -31,20 +27,23 @@ stages:
   - stage: Prod
     jobs:
       - deployment: DeployToProd
-        environment: 'Production'
+        environment: 
+          name: 'Production'
+          resourceName: 'ProdEnvironment'
+          action: 'Deploy'
+          tags: 'prod'
+          preDeployApprovals:
+            - approvers:
+                - stsamdc@hotmail.com
         strategy:
           runOnce:
             deploy:
               steps:
-                - task: UsePythonVersion@0
-                  inputs:
-                    versionSpec: '3.x'
-                  displayName: 'Use Python 3.x'
                 - script: |
                     terraform init
                     terraform apply -auto-approve
                   workingDirectory: Infra-Folder
-                  displayName: 'Provision Infrastructure with Terraform'
+                  displayName: 'Provision Infrastructure'
                 - task: Kubernetes@1
                   inputs:
                     connectionType: 'Azure Resource Manager'
@@ -55,6 +54,3 @@ stages:
                     configurationType: 'yaml'
                     configuration: '$(System.DefaultWorkingDirectory)/k8s/deployment.yaml'
                   displayName: 'Deploy to Kubernetes'
-        preDeployApprovals:
-          - approvers:
-              - stsamdc@hotmail.com
