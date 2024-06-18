@@ -6,28 +6,38 @@ trigger:
 pool:
   vmImage: 'ubuntu-latest'
 
-jobs:
-- job: Build
-  steps:
-    - task: UseJava@1
-      inputs:
-        versionSpec: '11'
-        jdkArchitectureOption: 'x64'
-        jdkSourceOption: 'PreInstalled'
-        jdkVersionOption: '11'
-        checkLatest: true
+steps:
+- task: UseJava@1
+  inputs:
+    versionSpec: '11'
+    jdkArchitectureOption: 'x64'
+    jdkSourceOption: 'PreInstalled'
+    jdkVersionOption: '11'
+    checkLatest: true
 
-    - task: Docker@2
-      inputs:
-        command: 'buildAndPush'
-        repository: 'forza-dc/java-webapp'
-        dockerfile: '**/Dockerfile'
-        containerRegistry: 'ForzaDockerRegistryConnection'
-        tags: |
-          $(Build.BuildId)
+- task: Maven@3
+  inputs:
+    mavenPomFile: 'pom.xml'
+    options: ''
+    goals: 'clean install'
+    publishJUnitResults: true
+    testResultsFiles: '**/surefire-reports/TEST-*.xml'
+    javaHomeOption: 'JDKVersion'
+    mavenVersionOption: 'Default'
+    mavenAuthenticateFeed: false
+    effectivePomSkip: false
 
-    - task: PublishBuildArtifacts@1
-      inputs:
-        pathToPublish: '$(Build.ArtifactStagingDirectory)'
-        artifactName: 'drop'
-        publishLocation: 'Container'
+- task: Docker@2
+  inputs:
+    command: 'buildAndPush'
+    repository: 'your-docker-repository/java-webapp'
+    dockerfile: '**/Dockerfile'
+    containerRegistry: 'ForzaDockerRegistryConnection'
+    tags: |
+      $(Build.BuildId)
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    pathToPublish: '$(System.DefaultWorkingDirectory)'
+    artifactName: 'drop'
+    publishLocation: 'Container'

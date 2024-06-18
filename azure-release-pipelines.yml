@@ -3,6 +3,12 @@ trigger:
     include:
       - main
 
+resources:
+  pipelines:
+    - pipeline: buildPipeline
+      source: Java-App-1
+      trigger: true
+
 stages:
   - stage: Dev
     jobs:
@@ -10,6 +16,8 @@ stages:
         pool:
           vmImage: 'ubuntu-latest'
         steps:
+          - download: current
+            artifact: drop
           - script: |
               curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
               sudo apt-add-repository "deb https://apt.releases.hashicorp.com $(lsb_release -cs) main"
@@ -17,7 +25,7 @@ stages:
             displayName: 'Install Terraform'
           - script: |
               terraform init
-              terraform apply -auto-approve
+              terraform apply -auto-approve -var 'subscription_id=$(subscriptionId)' -var 'client_id=$(servicePrincipalId)' -var 'client_secret=$(servicePrincipalKey)' -var 'tenant_id=$(tenantId)'
             workingDirectory: Infra-Folder
             displayName: 'Provision Infrastructure'
           - task: Kubernetes@1
@@ -28,7 +36,7 @@ stages:
               command: 'apply'
               useConfigurationFile: true
               configurationType: 'yaml'
-              configuration: '$(System.DefaultWorkingDirectory)/Infra-Folder/deployment.yaml'
+              configuration: '$(System.DefaultWorkingDirectory)/drop/k8s/deployment.yaml'
             displayName: 'Deploy to Kubernetes'
 
   - stage: Prod
@@ -37,6 +45,8 @@ stages:
         pool:
           vmImage: 'ubuntu-latest'
         steps:
+          - download: current
+            artifact: drop
           - script: |
               curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
               sudo apt-add-repository "deb https://apt.releases.hashicorp.com $(lsb_release -cs) main"
@@ -44,7 +54,7 @@ stages:
             displayName: 'Install Terraform'
           - script: |
               terraform init
-              terraform apply -auto-approve
+              terraform apply -auto-approve -var 'subscription_id=$(subscriptionId)' -var 'client_id=$(servicePrincipalId)' -var 'client_secret=$(servicePrincipalKey)' -var 'tenant_id=$(tenantId)'
             workingDirectory: Infra-Folder
             displayName: 'Provision Infrastructure'
           - task: Kubernetes@1
@@ -55,5 +65,5 @@ stages:
               command: 'apply'
               useConfigurationFile: true
               configurationType: 'yaml'
-              configuration: '$(System.DefaultWorkingDirectory)/Infra-Folder/deployment.yaml'
+              configuration: '$(System.DefaultWorkingDirectory)/drop/k8s/deployment.yaml'
             displayName: 'Deploy to Kubernetes'
