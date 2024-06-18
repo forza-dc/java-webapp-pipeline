@@ -30,9 +30,6 @@ stages:
         environment: 'Production'
         strategy:
           runOnce:
-            preDeployApprovals:
-              - approvers:
-                  - stsamdc@hotmail.com
             deploy:
               steps:
                 - script: |
