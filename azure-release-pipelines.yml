@@ -18,14 +18,19 @@ stages:
         steps:
           - download: current
             artifact: drop
-          - script: |
-              curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
-              sudo apt-add-repository "deb https://apt.releases.hashicorp.com $(lsb_release -cs) main"
-              sudo apt-get update && sudo apt-get install terraform
-            displayName: 'Install Terraform'
-          - script: |
-              terraform init
-              terraform apply -auto-approve -var 'subscription_id=$(subscriptionId)' -var 'client_id=$(servicePrincipalId)' -var 'client_secret=$(servicePrincipalKey)' -var 'tenant_id=$(tenantId)'
+          - task: TerraformInstaller@0
+            inputs:
+              terraformVersion: 'latest'
+          - task: AzureCLI@2
+            inputs:
+              azureSubscription: 'ForzaAzureRMConnection'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                az login --service-principal -u $(servicePrincipalId) -p $(servicePrincipalKey) --tenant $(tenantId)
+                az account set --subscription $(subscriptionId)
+                terraform init
+                terraform apply -auto-approve -var 'subscription_id=$(subscriptionId)' -var 'client_id=$(servicePrincipalId)' -var 'client_secret=$(servicePrincipalKey)' -var 'tenant_id=$(tenantId)'
             workingDirectory: Infra-Folder
             displayName: 'Provision Infrastructure'
           - task: Kubernetes@1
@@ -47,14 +52,19 @@ stages:
         steps:
           - download: current
             artifact: drop
-          - script: |
-              curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
-              sudo apt-add-repository "deb https://apt.releases.hashicorp.com $(lsb_release -cs) main"
-              sudo apt-get update && sudo apt-get install terraform
-            displayName: 'Install Terraform'
-          - script: |
-              terraform init
-              terraform apply -auto-approve -var 'subscription_id=$(subscriptionId)' -var 'client_id=$(servicePrincipalId)' -var 'client_secret=$(servicePrincipalKey)' -var 'tenant_id=$(tenantId)'
+          - task: TerraformInstaller@0
+            inputs:
+              terraformVersion: 'latest'
+          - task: AzureCLI@2
+            inputs:
+              azureSubscription: 'ForzaAzureRMConnection'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                az login --service-principal -u $(servicePrincipalId) -p $(servicePrincipalKey) --tenant $(tenantId)
+                az account set --subscription $(subscriptionId)
+                terraform init
+                terraform apply -auto-approve -var 'subscription_id=$(subscriptionId)' -var 'client_id=$(servicePrincipalId)' -var 'client_secret=$(servicePrincipalKey)' -var 'tenant_id=$(tenantId)'
             workingDirectory: Infra-Folder
             displayName: 'Provision Infrastructure'
           - task: Kubernetes@1
