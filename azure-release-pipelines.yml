@@ -30,6 +30,9 @@ stages:
         environment: 'Production'
         strategy:
           runOnce:
+            preDeployApprovals:
+              - approvers:
+                  - stsamdc@hotmail.com
             deploy:
               steps:
                 - script: |
@@ -47,6 +50,3 @@ stages:
                     configurationType: 'yaml'
                     configuration: '$(System.DefaultWorkingDirectory)/k8s/deployment.yaml'
                   displayName: 'Deploy to Kubernetes'
-        preDeployApprovals:
-          - approvers:
-              - stsamdc@hotmail.com
