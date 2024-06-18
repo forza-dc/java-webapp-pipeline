@@ -20,7 +20,7 @@ jobs:
     - task: Docker@2
       inputs:
         command: 'buildAndPush'
-        repository: 'your-docker-repository/java-webapp'
+        repository: 'forza-dc/java-webapp'
         dockerfile: '**/Dockerfile'
         containerRegistry: 'ForzaDockerRegistryConnection'
         tags: |
@@ -51,7 +51,7 @@ jobs:
           - task: Docker@2
             inputs:
               command: 'buildAndPush'
-              repository: 'your-docker-repository/java-webapp'
+              repository: 'forza-dc/java-webapp'
               dockerfile: '**/Dockerfile'
               containerRegistry: 'ForzaDockerRegistryConnection'
               tags: |
