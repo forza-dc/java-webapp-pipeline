@@ -3,6 +3,15 @@ trigger:
     include:
       - main
 
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  servicePrincipalId: 'your-service-principal-id'
+  servicePrincipalKey: 'your-service-principal-key'
+  tenantId: 'your-tenant-id'
+  subscriptionId: 'your-subscription-id'
+
 stages:
   - stage: Dev
     jobs:
@@ -16,11 +25,9 @@ stages:
               inlineScript: |
                 az login --service-principal -u $(servicePrincipalId) -p $(servicePrincipalKey) --tenant $(tenantId)
                 az account set --subscription $(subscriptionId)
-          - script: |
-              terraform init
-              terraform apply -auto-approve
-            workingDirectory: Infra-Folder
-            displayName: 'Provision Infrastructure'
+                terraform init -input=false Infra-Folder
+                terraform apply -input=false -auto-approve Infra-Folder
+
           - task: Kubernetes@1
             inputs:
               connectionType: 'Azure Resource Manager'
@@ -48,11 +55,9 @@ stages:
                     inlineScript: |
                       az login --service-principal -u $(servicePrincipalId) -p $(servicePrincipalKey) --tenant $(tenantId)
                       az account set --subscription $(subscriptionId)
-                - script: |
-                    terraform init
-                    terraform apply -auto-approve
-                  workingDirectory: Infra-Folder
-                  displayName: 'Provision Infrastructure'
+                      terraform init -input=false Infra-Folder
+                      terraform apply -input=false -auto-approve Infra-Folder
+
                 - task: Kubernetes@1
                   inputs:
                     connectionType: 'Azure Resource Manager'
