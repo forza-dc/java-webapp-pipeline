@@ -27,14 +27,7 @@ stages:
   - stage: Prod
     jobs:
       - deployment: DeployToProd
-        environment: 
-          name: 'Production'
-          resourceName: 'ProdEnvironment'
-          action: 'Deploy'
-          tags: 'prod'
-          preDeployApprovals:
-            - approvers:
-                - stsamdc@hotmail.com
+        environment: 'Production'
         strategy:
           runOnce:
             deploy:
@@ -54,3 +47,6 @@ stages:
                     configurationType: 'yaml'
                     configuration: '$(System.DefaultWorkingDirectory)/k8s/deployment.yaml'
                   displayName: 'Deploy to Kubernetes'
+        preDeployApprovals:
+          - approvers:
+              - stsamdc@hotmail.com
