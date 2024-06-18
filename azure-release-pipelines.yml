@@ -8,6 +8,14 @@ stages:
     jobs:
       - job: DeployToDev
         steps:
+          - task: AzureCLI@2
+            inputs:
+              azureSubscription: 'ForzaAzureRMConnection'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                az login --service-principal -u $(servicePrincipalId) -p $(servicePrincipalKey) --tenant $(tenantId)
+                az account set --subscription $(subscriptionId)
           - script: |
               terraform init
               terraform apply -auto-approve
@@ -32,6 +40,14 @@ stages:
           runOnce:
             deploy:
               steps:
+                - task: AzureCLI@2
+                  inputs:
+                    azureSubscription: 'ForzaAzureRMConnection'
+                    scriptType: 'bash'
+                    scriptLocation: 'inlineScript'
+                    inlineScript: |
+                      az login --service-principal -u $(servicePrincipalId) -p $(servicePrincipalKey) --tenant $(tenantId)
+                      az account set --subscription $(subscriptionId)
                 - script: |
                     terraform init
                     terraform apply -auto-approve
