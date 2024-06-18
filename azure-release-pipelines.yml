@@ -10,9 +10,11 @@ stages:
         pool:
           vmImage: 'ubuntu-latest'
         steps:
-          - task: TerraformInstaller@0
-            inputs:
-              terraformVersion: '1.0.10'
+          - script: |
+              curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
+              sudo apt-add-repository "deb https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+              sudo apt-get update && sudo apt-get install terraform
+            displayName: 'Install Terraform'
           - script: |
               terraform init
               terraform apply -auto-approve
@@ -35,9 +37,11 @@ stages:
         pool:
           vmImage: 'ubuntu-latest'
         steps:
-          - task: TerraformInstaller@0
-            inputs:
-              terraformVersion: '1.0.10'
+          - script: |
+              curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
+              sudo apt-add-repository "deb https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+              sudo apt-get update && sudo apt-get install terraform
+            displayName: 'Install Terraform'
           - script: |
               terraform init
               terraform apply -auto-approve
