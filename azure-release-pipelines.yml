@@ -25,8 +25,8 @@ stages:
               inlineScript: |
                 az login --service-principal -u $(servicePrincipalId) -p $(servicePrincipalKey) --tenant $(tenantId)
                 az account set --subscription $(subscriptionId)
-                terraform init -input=false Infra-Folder
-                terraform apply -input=false -auto-approve Infra-Folder
+                terraform init Infra-Folder
+                terraform apply -auto-approve Infra-Folder
 
           - task: Kubernetes@1
             inputs:
@@ -36,7 +36,7 @@ stages:
               command: 'apply'
               useConfigurationFile: true
               configurationType: 'yaml'
-              configuration: '$(System.DefaultWorkingDirectory)/k8s/deployment.yaml'
+              configuration: '$(System.DefaultWorkingDirectory)/Infra-Folder/deployment.yaml'
             displayName: 'Deploy to Kubernetes'
 
   - stage: Prod
@@ -55,8 +55,8 @@ stages:
                     inlineScript: |
                       az login --service-principal -u $(servicePrincipalId) -p $(servicePrincipalKey) --tenant $(tenantId)
                       az account set --subscription $(subscriptionId)
-                      terraform init -input=false Infra-Folder
-                      terraform apply -input=false -auto-approve Infra-Folder
+                      terraform init Infra-Folder
+                      terraform apply -auto-approve Infra-Folder
 
                 - task: Kubernetes@1
                   inputs:
@@ -66,5 +66,5 @@ stages:
                     command: 'apply'
                     useConfigurationFile: true
                     configurationType: 'yaml'
-                    configuration: '$(System.DefaultWorkingDirectory)/k8s/deployment.yaml'
+                    configuration: '$(System.DefaultWorkingDirectory)/Infra-Folder/deployment.yaml'
                   displayName: 'Deploy to Kubernetes'
