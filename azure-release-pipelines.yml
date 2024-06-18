@@ -6,49 +6,52 @@ trigger:
 pool:
   vmImage: 'ubuntu-latest'
 
-steps:
-- task: UseJava@1
-  inputs:
-    versionSpec: '11'
-    jdkArchitectureOption: 'x64'
-    jdkSourceOption: 'PreInstalled'
-    jdkVersionOption: '11'
-    checkLatest: true
+jobs:
+  - job: BuildAndPushDocker
+    steps:
+      - task: UseJava@1
+        inputs:
+          versionSpec: '11'
+          jdkArchitectureOption: 'x64'
+          jdkSourceOption: 'PreInstalled'
+          jdkVersionOption: '11'
+          checkLatest: true
 
-- task: Docker@2
-  inputs:
-    command: 'buildAndPush'
-    repository: 'your-docker-repository'
-    dockerfile: '**/Dockerfile'
-    containerRegistry: 'ForzaDockerRegistryConnection'
-    tags: |
-      $(Build.BuildId)
+      - task: Docker@2
+        inputs:
+          command: 'buildAndPush'
+          repository: 'your-docker-repository'
+          dockerfile: '**/Dockerfile'
+          containerRegistry: 'ForzaDockerRegistryConnection'
+          tags: |
+            $(Build.BuildId)
 
-- task: PublishBuildArtifacts@1
-  inputs:
-    pathToPublish: '$(Build.ArtifactStagingDirectory)'
-    artifactName: 'drop'
-    publishLocation: 'Container'
-
-- task: AzureCLI@2
-  inputs:
-    azureSubscription: 'ForzaAzureRMConnection'
-    scriptType: 'bash'
-    scriptLocation: 'inlineScript'
-    inlineScript: |
-      az login --service-principal -u $(servicePrincipalId) -p $(servicePrincipalKey) --tenant $(tenantId)
-      az account set --subscription 597c9674-fa46-4649-aa3b-85f83ec9c03f
+      - task: PublishBuildArtifacts@1
+        inputs:
+          pathToPublish: '$(Build.ArtifactStagingDirectory)'
+          artifactName: 'drop'
+          publishLocation: 'Container'
 
 stages:
   - stage: Dev
     jobs:
       - job: DeployToDev
         steps:
+          - task: AzureCLI@2
+            inputs:
+              azureSubscription: 'ForzaAzureRMConnection'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                az login --service-principal -u $(servicePrincipalId) -p $(servicePrincipalKey) --tenant $(tenantId)
+                az account set --subscription 597c9674-fa46-4649-aa3b-85f83ec9c03f
+
           - script: |
               terraform init
               terraform apply -auto-approve
             workingDirectory: Infra-Folder
             displayName: 'Provision Infrastructure'
+
           - task: Kubernetes@1
             inputs:
               connectionType: 'Azure Resource Manager'
@@ -57,18 +60,28 @@ stages:
               command: 'apply'
               useConfigurationFile: true
               configurationType: 'yaml'
-              configuration: '$(System.DefaultWorkingDirectory)/k8s/deployment.yaml'
+              configuration: '$(System.DefaultWorkingDirectory)/Infra-Folder/deployment.yaml'
             displayName: 'Deploy to Kubernetes'
 
   - stage: Prod
     jobs:
       - job: DeployToProd
         steps:
+          - task: AzureCLI@2
+            inputs:
+              azureSubscription: 'ForzaAzureRMConnection'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                az login --service-principal -u $(servicePrincipalId) -p $(servicePrincipalKey) --tenant $(tenantId)
+                az account set --subscription 597c9674-fa46-4649-aa3b-85f83ec9c03f
+
           - script: |
               terraform init
               terraform apply -auto-approve
             workingDirectory: Infra-Folder
             displayName: 'Provision Infrastructure'
+
           - task: Kubernetes@1
             inputs:
               connectionType: 'Azure Resource Manager'
@@ -77,5 +90,5 @@ stages:
               command: 'apply'
               useConfigurationFile: true
               configurationType: 'yaml'
-              configuration: '$(System.DefaultWorkingDirectory)/k8s/deployment.yaml'
+              configuration: '$(System.DefaultWorkingDirectory)/Infra-Folder/deployment.yaml'
             displayName: 'Deploy to Kubernetes'
