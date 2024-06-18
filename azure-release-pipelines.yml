@@ -2,6 +2,7 @@ trigger:
   branches:
     include:
       - main
+
 stages:
   - stage: Dev
     jobs:
@@ -10,7 +11,7 @@ stages:
           - script: |
               terraform init
               terraform apply -auto-approve
-            workingDirectory: infra
+            workingDirectory: Infra-Folder
             displayName: 'Provision Infrastructure'
           - task: Kubernetes@1
             inputs:
@@ -21,6 +22,7 @@ stages:
               useConfigurationFile: true
               configurationType: 'yaml'
               configuration: '$(System.DefaultWorkingDirectory)/k8s/deployment.yaml'
+
   - stage: Prod
     jobs:
       - deployment: DeployToProd
@@ -32,7 +34,7 @@ stages:
                 - script: |
                     terraform init
                     terraform apply -auto-approve
-                  workingDirectory: infra
+                  workingDirectory: Infra-Folder
                   displayName: 'Provision Infrastructure'
                 - task: Kubernetes@1
                   inputs:
