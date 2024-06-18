@@ -36,8 +36,13 @@ steps:
     tags: |
       $(Build.BuildId)
 
+- task: CopyFiles@2
+  inputs:
+    contents: '**'
+    targetFolder: '$(Build.ArtifactStagingDirectory)/drop'
+
 - task: PublishBuildArtifacts@1
   inputs:
-    pathToPublish: '$(System.DefaultWorkingDirectory)'
+    pathToPublish: '$(Build.ArtifactStagingDirectory)/drop'
     artifactName: 'drop'
     publishLocation: 'Container'
