@@ -7,94 +7,62 @@ pool:
   vmImage: 'ubuntu-latest'
 
 jobs:
-  - job: BuildAndPushDocker
-    steps:
-      - task: UseJava@1
-        inputs:
-          versionSpec: '11'
-          jdkArchitectureOption: 'x64'
-          jdkSourceOption: 'PreInstalled'
-          jdkVersionOption: '11'
-          checkLatest: true
+- job: DeployToDev
+  steps:
+    - task: UseJava@1
+      inputs:
+        versionSpec: '11'
+        jdkArchitectureOption: 'x64'
+        jdkSourceOption: 'PreInstalled'
+        jdkVersionOption: '11'
+        checkLatest: true
 
-      - task: Docker@2
-        inputs:
-          command: 'buildAndPush'
-          repository: 'your-docker-repository'
-          dockerfile: '**/Dockerfile'
-          containerRegistry: 'ForzaDockerRegistryConnection'
-          tags: |
-            $(Build.BuildId)
+    - task: Docker@2
+      inputs:
+        command: 'buildAndPush'
+        repository: 'your-docker-repository/java-webapp'
+        dockerfile: '**/Dockerfile'
+        containerRegistry: 'ForzaDockerRegistryConnection'
+        tags: |
+          $(Build.BuildId)
 
-      - task: PublishBuildArtifacts@1
-        inputs:
-          pathToPublish: '$(Build.ArtifactStagingDirectory)'
-          artifactName: 'drop'
-          publishLocation: 'Container'
+    - task: PublishBuildArtifacts@1
+      inputs:
+        pathToPublish: '$(Build.ArtifactStagingDirectory)'
+        artifactName: 'drop'
+        publishLocation: 'Container'
 
-stages:
-  - stage: Dev
-    jobs:
-      - job: DeployToDev
+- job: DeployToProd
+  environment: 'Production'
+  pool:
+    vmImage: 'ubuntu-latest'
+  strategy:
+    runOnce:
+      deploy:
         steps:
-          - task: TerraformInstaller@0
+          - task: UseJava@1
             inputs:
-              terraformVersion: 'latest'
+              versionSpec: '11'
+              jdkArchitectureOption: 'x64'
+              jdkSourceOption: 'PreInstalled'
+              jdkVersionOption: '11'
+              checkLatest: true
 
-          - task: Terraform@0
+          - task: Docker@2
             inputs:
-              provider: 'azurerm'
-              command: 'init'
-              workingDirectory: '$(System.DefaultWorkingDirectory)/Infra-Folder'
-              backendServiceArm: 'ForzaAzureRMConnection'
+              command: 'buildAndPush'
+              repository: 'your-docker-repository/java-webapp'
+              dockerfile: '**/Dockerfile'
+              containerRegistry: 'ForzaDockerRegistryConnection'
+              tags: |
+                $(Build.BuildId)
 
-          - task: Terraform@0
+          - task: Kubernetes@1
             inputs:
-              provider: 'azurerm'
-              command: 'apply'
-              workingDirectory: '$(System.DefaultWorkingDirectory)/Infra-Folder'
-              backendServiceArm: 'ForzaAzureRMConnection'
-              environmentServiceNameAzureRM: 'ForzaAzureRMConnection'
-              commandOptions: '-auto-approve'
-
-          - task: KubernetesManifest@0
-            inputs:
-              action: 'deploy'
-              kubernetesServiceConnection: 'ForzaAzureRMConnection'
-              namespace: 'dev'
-              manifests: '$(System.DefaultWorkingDirectory)/Infra-Folder/deployment.yaml'
-              enableConfigSubstitution: true
-            displayName: 'Deploy to Kubernetes'
-
-  - stage: Prod
-    jobs:
-      - job: DeployToProd
-        steps:
-          - task: TerraformInstaller@0
-            inputs:
-              terraformVersion: 'latest'
-
-          - task: Terraform@0
-            inputs:
-              provider: 'azurerm'
-              command: 'init'
-              workingDirectory: '$(System.DefaultWorkingDirectory)/Infra-Folder'
-              backendServiceArm: 'ForzaAzureRMConnection'
-
-          - task: Terraform@0
-            inputs:
-              provider: 'azurerm'
-              command: 'apply'
-              workingDirectory: '$(System.DefaultWorkingDirectory)/Infra-Folder'
-              backendServiceArm: 'ForzaAzureRMConnection'
-              environmentServiceNameAzureRM: 'ForzaAzureRMConnection'
-              commandOptions: '-auto-approve'
-
-          - task: KubernetesManifest@0
-            inputs:
-              action: 'deploy'
-              kubernetesServiceConnection: 'ForzaAzureRMConnection'
+              connectionType: 'Azure Resource Manager'
+              azureSubscriptionEndpoint: 'ForzaAzureRMConnection'
               namespace: 'prod'
-              manifests: '$(System.DefaultWorkingDirectory)/Infra-Folder/deployment.yaml'
-              enableConfigSubstitution: true
-            displayName: 'Deploy to Kubernetes'
+              command: 'apply'
+              useConfigurationFile: true
+              configurationType: 'yaml'
+              configuration: '$(System.DefaultWorkingDirectory)/Infra-Folder/deployment.yaml'
