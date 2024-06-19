@@ -18,15 +18,19 @@ stages:
         steps:
           - task: DownloadPipelineArtifact@2
             inputs:
-              buildType: 'specific'
-              project: 'Java-App-1'
-              pipeline: '$(buildPipeline)'
-              buildVersionToDownload: 'latest'
-              artifactName: 'drop'
-              downloadPath: '$(System.ArtifactsDirectory)'
-          - task: TerraformInstaller@0
+              buildType: 'current'
+              targetPath: '$(Pipeline.Workspace)'
+
+          - task: UsePythonVersion@0
             inputs:
-              terraformVersion: 'latest'
+              versionSpec: '3.x'
+              addToPath: true
+
+          - script: |
+              python -m pip install --upgrade pip
+              pip install terraform
+            displayName: 'Install Terraform'
+
           - task: AzureCLI@2
             inputs:
               azureSubscription: 'ForzaAzureRMConnection'
@@ -36,9 +40,10 @@ stages:
                 az login --service-principal -u $(servicePrincipalId) -p $(servicePrincipalKey) --tenant $(tenantId)
                 az account set --subscription $(subscriptionId)
                 terraform init
-                terraform apply -auto-approve -var 'subscription_id=$(subscriptionId)' -var 'client_id=$(servicePrincipalId)' -var 'client_secret=$(servicePrincipalKey)' -var 'tenant_id=$(tenantId)'
+                terraform apply -auto-approve
             workingDirectory: Infra-Folder
             displayName: 'Provision Infrastructure'
+
           - task: Kubernetes@1
             inputs:
               connectionType: 'Azure Resource Manager'
@@ -47,7 +52,7 @@ stages:
               command: 'apply'
               useConfigurationFile: true
               configurationType: 'yaml'
-              configuration: '$(System.ArtifactsDirectory)/drop/k8s/deployment.yaml'
+              configuration: '$(Pipeline.Workspace)/drop/k8s/deployment.yaml'
             displayName: 'Deploy to Kubernetes'
 
   - stage: Prod
@@ -58,15 +63,19 @@ stages:
         steps:
           - task: DownloadPipelineArtifact@2
             inputs:
-              buildType: 'specific'
-              project: 'Java-App-1'
-              pipeline: '$(buildPipeline)'
-              buildVersionToDownload: 'latest'
-              artifactName: 'drop'
-              downloadPath: '$(System.ArtifactsDirectory)'
-          - task: TerraformInstaller@0
+              buildType: 'current'
+              targetPath: '$(Pipeline.Workspace)'
+
+          - task: UsePythonVersion@0
             inputs:
-              terraformVersion: 'latest'
+              versionSpec: '3.x'
+              addToPath: true
+
+          - script: |
+              python -m pip install --upgrade pip
+              pip install terraform
+            displayName: 'Install Terraform'
+
           - task: AzureCLI@2
             inputs:
               azureSubscription: 'ForzaAzureRMConnection'
@@ -76,9 +85,10 @@ stages:
                 az login --service-principal -u $(servicePrincipalId) -p $(servicePrincipalKey) --tenant $(tenantId)
                 az account set --subscription $(subscriptionId)
                 terraform init
-                terraform apply -auto-approve -var 'subscription_id=$(subscriptionId)' -var 'client_id=$(servicePrincipalId)' -var 'client_secret=$(servicePrincipalKey)' -var 'tenant_id=$(tenantId)'
+                terraform apply -auto-approve
             workingDirectory: Infra-Folder
             displayName: 'Provision Infrastructure'
+
           - task: Kubernetes@1
             inputs:
               connectionType: 'Azure Resource Manager'
@@ -87,5 +97,5 @@ stages:
               command: 'apply'
               useConfigurationFile: true
               configurationType: 'yaml'
-              configuration: '$(System.ArtifactsDirectory)/drop/k8s/deployment.yaml'
+              configuration: '$(Pipeline.Workspace)/drop/k8s/deployment.yaml'
             displayName: 'Deploy to Kubernetes'
