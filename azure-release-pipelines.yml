@@ -53,6 +53,12 @@ stages:
 
           - task: TerraformCLI@2
             inputs:
+              command: 'plan'
+              workingDirectory: '$(System.DefaultWorkingDirectory)/Infra-Folder'
+              allowTelemetryCollection: false
+              
+          - task: TerraformCLI@2
+            inputs:
               command: 'apply'
               workingDirectory: '$(System.DefaultWorkingDirectory)/Infra-Folder'
               environmentServiceName: 'ForzaAzureRMConnection'
