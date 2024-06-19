@@ -15,18 +15,6 @@ steps:
     jdkVersionOption: '11'
     checkLatest: true
 
-- task: Maven@3
-  inputs:
-    mavenPomFile: 'pom.xml'
-    options: ''
-    goals: 'clean install'
-    publishJUnitResults: true
-    testResultsFiles: '**/surefire-reports/TEST-*.xml'
-    javaHomeOption: 'JDKVersion'
-    mavenVersionOption: 'Default'
-    mavenAuthenticateFeed: false
-    effectivePomSkip: false
-
 - task: Docker@2
   inputs:
     command: 'buildAndPush'
@@ -36,13 +24,8 @@ steps:
     tags: |
       $(Build.BuildId)
 
-- task: CopyFiles@2
-  inputs:
-    contents: '**'
-    targetFolder: '$(Build.ArtifactStagingDirectory)/drop'
-
 - task: PublishBuildArtifacts@1
   inputs:
-    pathToPublish: '$(Build.ArtifactStagingDirectory)/drop'
+    pathToPublish: '$(Pipeline.Workspace)/drop'
     artifactName: 'drop'
     publishLocation: 'Container'
