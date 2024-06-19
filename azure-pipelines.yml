@@ -18,7 +18,7 @@ steps:
 - task: Docker@2
   inputs:
     command: 'buildAndPush'
-    repository: 'forza-dc/java-webapp'
+    repository: 'forzastorageaccount1.azurecr.io/java-webapp'
     dockerfile: '**/Dockerfile'
     containerRegistry: 'ForzaDockerRegistryConnection'
     tags: |
@@ -36,4 +36,4 @@ steps:
     scriptType: 'bash'
     scriptLocation: 'inlineScript'
     inlineScript: |
-      az storage blob upload-batch -d artifacts -s $(Build.ArtifactStagingDirectory) --account-name forzastorageaccount1 --account-key $storageAccountKey
+      az storage blob upload-batch -d artifacts -s $(Build.ArtifactStagingDirectory) --account-name forzastorageaccount1 --auth-mode login

@@ -3,18 +3,13 @@ trigger:
     include:
       - main
 
-resources:
-  pipelines:
-    - pipeline: buildPipeline
-      source: Java-App-1
-      trigger: true
+pool:
+  vmImage: 'ubuntu-latest'
 
 stages:
   - stage: Dev
     jobs:
       - job: DeployToDev
-        pool:
-          vmImage: 'ubuntu-latest'
         steps:
           - task: AzureCLI@2
             inputs:
@@ -22,12 +17,7 @@ stages:
               scriptType: 'bash'
               scriptLocation: 'inlineScript'
               inlineScript: |
-                az storage blob download-batch -d $(Pipeline.Workspace)/drop -s artifacts --account-name forzastorageaccount1 --account-key $storageAccountKey
-          - script: |
-              curl -LO "https://releases.hashicorp.com/terraform/1.0.3/terraform_1.0.3_linux_amd64.zip"
-              unzip terraform_1.0.3_linux_amd64.zip
-              sudo mv terraform /usr/local/bin/
-            displayName: 'Install Terraform'
+                az storage blob download-batch -d $(Pipeline.Workspace) -s artifacts --account-name forzastorageaccount1 --auth-mode login
           - script: |
               terraform init
               terraform apply -auto-approve
@@ -41,39 +31,36 @@ stages:
               command: 'apply'
               useConfigurationFile: true
               configurationType: 'yaml'
-              configuration: '$(Pipeline.Workspace)/drop/k8s/deployment.yaml'
+              configuration: '$(Pipeline.Workspace)/k8s/deployment.yaml'
             displayName: 'Deploy to Kubernetes'
 
   - stage: Prod
     jobs:
-      - job: DeployToProd
-        pool:
-          vmImage: 'ubuntu-latest'
-        steps:
-          - task: AzureCLI@2
-            inputs:
-              azureSubscription: 'ForzaAzureRMConnection'
-              scriptType: 'bash'
-              scriptLocation: 'inlineScript'
-              inlineScript: |
-                az storage blob download-batch -d $(Pipeline.Workspace)/drop -s artifacts --account-name forzastorageaccount1 --account-key $storageAccountKey
-          - script: |
-              curl -LO "https://releases.hashicorp.com/terraform/1.0.3/terraform_1.0.3_linux_amd64.zip"
-              unzip terraform_1.0.3_linux_amd64.zip
-              sudo mv terraform /usr/local/bin/
-            displayName: 'Install Terraform'
-          - script: |
-              terraform init
-              terraform apply -auto-approve
-            workingDirectory: Infra-Folder
-            displayName: 'Provision Infrastructure'
-          - task: Kubernetes@1
-            inputs:
-              connectionType: 'Azure Resource Manager'
-              azureSubscriptionEndpoint: 'ForzaAzureRMConnection'
-              namespace: 'prod'
-              command: 'apply'
-              useConfigurationFile: true
-              configurationType: 'yaml'
-              configuration: '$(Pipeline.Workspace)/drop/k8s/deployment.yaml'
-            displayName: 'Deploy to Kubernetes'
+      - deployment: DeployToProd
+        environment: 'Production'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: AzureCLI@2
+                  inputs:
+                    azureSubscription: 'ForzaAzureRMConnection'
+                    scriptType: 'bash'
+                    scriptLocation: 'inlineScript'
+                    inlineScript: |
+                      az storage blob download-batch -d $(Pipeline.Workspace) -s artifacts --account-name forzastorageaccount1 --auth-mode login
+                - script: |
+                    terraform init
+                    terraform apply -auto-approve
+                  workingDirectory: Infra-Folder
+                  displayName: 'Provision Infrastructure'
+                - task: Kubernetes@1
+                  inputs:
+                    connectionType: 'Azure Resource Manager'
+                    azureSubscriptionEndpoint: 'ForzaAzureRMConnection'
+                    namespace: 'prod'
+                    command: 'apply'
+                    useConfigurationFile: true
+                    configurationType: 'yaml'
+                    configuration: '$(Pipeline.Workspace)/k8s/deployment.yaml'
+                  displayName: 'Deploy to Kubernetes'
