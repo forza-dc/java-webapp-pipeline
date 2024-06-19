@@ -49,8 +49,8 @@ stages:
           - task: TerraformCLI@2
             inputs:
               command: 'init'
+              workingDirectory: '$(System.DefaultWorkingDirectory)/Infra-Folder'
               allowTelemetryCollection: false
-
           - task: TerraformCLI@2
             inputs:
               command: 'plan'
