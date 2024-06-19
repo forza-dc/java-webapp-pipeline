@@ -21,3 +21,12 @@ steps:
     targetPath: '$(System.DefaultWorkingDirectory)/target/helloworld.war'
     artifactName: 'forza-java-webapp'
     publishLocation: 'pipeline'
+
+- task: Docker@2
+  inputs:
+    containerRegistry: 'ForzaDockerRegistryConnection'
+    repository: 'forza-dc/java-webapp'
+    command: 'buildAndPush'
+    Dockerfile: '**/Dockerfile'
+    tags: |
+      $(Build.BuildId)
