@@ -6,23 +6,55 @@ trigger:
 pool:
   vmImage: 'ubuntu-latest'
 
+steps:
+- task: UseJava@1
+  inputs:
+    versionSpec: '11'
+    jdkArchitectureOption: 'x64'
+    jdkSourceOption: 'PreInstalled'
+    jdkVersionOption: '11'
+    checkLatest: true
+
+- task: Docker@2
+  inputs:
+    command: 'buildAndPush'
+    repository: 'your-docker-repository'
+    dockerfile: '**/Dockerfile'
+    containerRegistry: 'ForzaDockerRegistryConnection'
+    tags: |
+      $(Build.BuildId)
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    pathToPublish: '$(Build.ArtifactStagingDirectory)'
+    artifactName: 'drop'
+    publishLocation: 'Container'
+
+- task: DownloadPipelineArtifact@2
+  inputs:
+    buildType: 'current'
+    targetPath: '$(Pipeline.Workspace)'
+
 stages:
   - stage: Dev
     jobs:
       - job: DeployToDev
         steps:
-          - task: AzureCLI@2
+          - task: DownloadPipelineArtifact@2
             inputs:
-              azureSubscription: 'ForzaAzureRMConnection'
-              scriptType: 'bash'
-              scriptLocation: 'inlineScript'
-              inlineScript: |
-                az storage blob download-batch -d $(Pipeline.Workspace) -s artifacts --account-name forzastorageaccount1 --auth-mode login
+              buildType: 'current'
+              targetPath: '$(Pipeline.Workspace)'
+
+          - task: TerraformInstaller@0
+            inputs:
+              terraformVersion: '0.14.5'
+
           - script: |
               terraform init
               terraform apply -auto-approve
             workingDirectory: Infra-Folder
             displayName: 'Provision Infrastructure'
+
           - task: Kubernetes@1
             inputs:
               connectionType: 'Azure Resource Manager'
@@ -31,36 +63,36 @@ stages:
               command: 'apply'
               useConfigurationFile: true
               configurationType: 'yaml'
-              configuration: '$(Pipeline.Workspace)/k8s/deployment.yaml'
+              configuration: '$(Pipeline.Workspace)/Infra-Folder/deployment.yaml'
             displayName: 'Deploy to Kubernetes'
 
   - stage: Prod
     jobs:
-      - deployment: DeployToProd
+      - job: DeployToProd
         environment: 'Production'
-        strategy:
-          runOnce:
-            deploy:
-              steps:
-                - task: AzureCLI@2
-                  inputs:
-                    azureSubscription: 'ForzaAzureRMConnection'
-                    scriptType: 'bash'
-                    scriptLocation: 'inlineScript'
-                    inlineScript: |
-                      az storage blob download-batch -d $(Pipeline.Workspace) -s artifacts --account-name forzastorageaccount1 --auth-mode login
-                - script: |
-                    terraform init
-                    terraform apply -auto-approve
-                  workingDirectory: Infra-Folder
-                  displayName: 'Provision Infrastructure'
-                - task: Kubernetes@1
-                  inputs:
-                    connectionType: 'Azure Resource Manager'
-                    azureSubscriptionEndpoint: 'ForzaAzureRMConnection'
-                    namespace: 'prod'
-                    command: 'apply'
-                    useConfigurationFile: true
-                    configurationType: 'yaml'
-                    configuration: '$(Pipeline.Workspace)/k8s/deployment.yaml'
-                  displayName: 'Deploy to Kubernetes'
+        steps:
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              buildType: 'current'
+              targetPath: '$(Pipeline.Workspace)'
+
+          - task: TerraformInstaller@0
+            inputs:
+              terraformVersion: '0.14.5'
+
+          - script: |
+              terraform init
+              terraform apply -auto-approve
+            workingDirectory: Infra-Folder
+            displayName: 'Provision Infrastructure'
+
+          - task: Kubernetes@1
+            inputs:
+              connectionType: 'Azure Resource Manager'
+              azureSubscriptionEndpoint: 'ForzaAzureRMConnection'
+              namespace: 'prod'
+              command: 'apply'
+              useConfigurationFile: true
+              configurationType: 'yaml'
+              configuration: '$(Pipeline.Workspace)/Infra-Folder/deployment.yaml'
+            displayName: 'Deploy to Kubernetes'
