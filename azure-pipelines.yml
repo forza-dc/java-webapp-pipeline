@@ -7,13 +7,19 @@ pool:
   vmImage: 'ubuntu-latest'
 
 steps:
-- task: UseJava@1
+# - task: UseJava@1
+#   inputs:
+#     versionSpec: '11'
+#     jdkArchitectureOption: 'x64'
+#     jdkSourceOption: 'PreInstalled'
+#     jdkVersionOption: '11'
+#     checkLatest: true
+
+- task: JavaToolInstaller@0
   inputs:
     versionSpec: '11'
     jdkArchitectureOption: 'x64'
     jdkSourceOption: 'PreInstalled'
-    jdkVersionOption: '11'
-    checkLatest: true
 
 - script: |
     ./gradlew build
