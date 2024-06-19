@@ -23,15 +23,13 @@ stages:
               pipeline: 'Java-App-1'
               runVersion: 'latest'
               artifactName: 'drop'
-              targetPath: '$(Pipeline.Workspace)'
+              targetPath: '$(Pipeline.Workspace)/drop'
           - script: |
               curl -LO "https://releases.hashicorp.com/terraform/1.0.3/terraform_1.0.3_linux_amd64.zip"
               unzip terraform_1.0.3_linux_amd64.zip
               sudo mv terraform /usr/local/bin/
             displayName: 'Install Terraform'
           - script: |
-              az login --service-principal -u $(servicePrincipalId) -p $(servicePrincipalKey) --tenant $(tenantId)
-              az account set --subscription $(subscriptionId)
               terraform init
               terraform apply -auto-approve
             workingDirectory: Infra-Folder
@@ -60,15 +58,13 @@ stages:
               pipeline: 'Java-App-1'
               runVersion: 'latest'
               artifactName: 'drop'
-              targetPath: '$(Pipeline.Workspace)'
+              targetPath: '$(Pipeline.Workspace)/drop'
           - script: |
               curl -LO "https://releases.hashicorp.com/terraform/1.0.3/terraform_1.0.3_linux_amd64.zip"
               unzip terraform_1.0.3_linux_amd64.zip
               sudo mv terraform /usr/local/bin/
             displayName: 'Install Terraform'
           - script: |
-              az login --service-principal -u $(servicePrincipalId) -p $(servicePrincipalKey) --tenant $(tenantId)
-              az account set --subscription $(subscriptionId)
               terraform init
               terraform apply -auto-approve
             workingDirectory: Infra-Folder
