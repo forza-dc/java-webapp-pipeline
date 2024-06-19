@@ -1,3 +1,8 @@
+provider "azurerm" {
+  features {}
+  version         = ">= 3.0.0"
+}
+
 resource "azurerm_resource_group" "aks" {
   name     = "ForzaResourceGroup"
   location = "East US"
