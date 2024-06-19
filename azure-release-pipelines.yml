@@ -6,48 +6,49 @@ trigger:
 pool:
   vmImage: 'ubuntu-latest'
 
-steps:
-- task: UseJava@1
-  inputs:
-    versionSpec: '11'
-    jdkArchitectureOption: 'x64'
-    jdkSourceOption: 'PreInstalled'
-    jdkVersionOption: '11'
-    checkLatest: true
+# steps:
+# - task: UseJava@1
+#   inputs:
+#     versionSpec: '11'
+#     jdkArchitectureOption: 'x64'
+#     jdkSourceOption: 'PreInstalled'
+#     jdkVersionOption: '11'
+#     checkLatest: true
 
-- task: Docker@2
-  inputs:
-    command: 'buildAndPush'
-    repository: 'your-docker-repository'
-    dockerfile: '**/Dockerfile'
-    containerRegistry: 'ForzaDockerRegistryConnection'
-    tags: |
-      $(Build.BuildId)
+# - task: Docker@2
+#   inputs:
+#     command: 'buildAndPush'
+#     repository: 'your-docker-repository'
+#     dockerfile: '**/Dockerfile'
+#     containerRegistry: 'ForzaDockerRegistryConnection'
+#     tags: |
+#       $(Build.BuildId)
 
-- task: PublishBuildArtifacts@1
-  inputs:
-    pathToPublish: '$(Build.ArtifactStagingDirectory)'
-    artifactName: 'drop'
-    publishLocation: 'Container'
+# - task: PublishBuildArtifacts@1
+#   inputs:
+#     pathToPublish: '$(Build.ArtifactStagingDirectory)'
+#     artifactName: 'drop'
+#     publishLocation: 'Container'
 
-- task: DownloadPipelineArtifact@2
-  inputs:
-    buildType: 'current'
-    targetPath: '$(Pipeline.Workspace)'
+# - task: DownloadPipelineArtifact@2
+#   inputs:
+#     buildType: 'current'
+#     targetPath: '$(Pipeline.Workspace)'
 
 stages:
   - stage: Dev
     jobs:
       - job: DeployToDev
         steps:
-          - task: DownloadPipelineArtifact@2
-            inputs:
-              buildType: 'current'
-              targetPath: '$(Pipeline.Workspace)'
+          # - task: DownloadPipelineArtifact@2
+          #   inputs:
+          #     buildType: 'current'
+          #     targetPath: '$(Pipeline.Workspace)'
 
           - task: TerraformInstaller@0
             inputs:
               terraformVersion: '0.14.5'
+
 
           - script: |
               terraform init
@@ -66,33 +67,33 @@ stages:
               configuration: '$(Pipeline.Workspace)/Infra-Folder/deployment.yaml'
             displayName: 'Deploy to Kubernetes'
 
-  - stage: Prod
-    jobs:
-      - job: DeployToProd
-        environment: 'Production'
-        steps:
-          - task: DownloadPipelineArtifact@2
-            inputs:
-              buildType: 'current'
-              targetPath: '$(Pipeline.Workspace)'
+  # - stage: Prod
+  #   jobs:
+  #     - job: DeployToProd
+  #       environment: 'Production'
+  #       steps:
+  #         - task: DownloadPipelineArtifact@2
+  #           inputs:
+  #             buildType: 'current'
+  #             targetPath: '$(Pipeline.Workspace)'
 
-          - task: TerraformInstaller@0
-            inputs:
-              terraformVersion: '0.14.5'
+  #         - task: TerraformInstaller@0
+  #           inputs:
+  #             terraformVersion: '0.14.5'
 
-          - script: |
-              terraform init
-              terraform apply -auto-approve
-            workingDirectory: Infra-Folder
-            displayName: 'Provision Infrastructure'
+  #         - script: |
+  #             terraform init
+  #             terraform apply -auto-approve
+  #           workingDirectory: Infra-Folder
+  #           displayName: 'Provision Infrastructure'
 
-          - task: Kubernetes@1
-            inputs:
-              connectionType: 'Azure Resource Manager'
-              azureSubscriptionEndpoint: 'ForzaAzureRMConnection'
-              namespace: 'prod'
-              command: 'apply'
-              useConfigurationFile: true
-              configurationType: 'yaml'
-              configuration: '$(Pipeline.Workspace)/Infra-Folder/deployment.yaml'
-            displayName: 'Deploy to Kubernetes'
+  #         - task: Kubernetes@1
+  #           inputs:
+  #             connectionType: 'Azure Resource Manager'
+  #             azureSubscriptionEndpoint: 'ForzaAzureRMConnection'
+  #             namespace: 'prod'
+  #             command: 'apply'
+  #             useConfigurationFile: true
+  #             configurationType: 'yaml'
+  #             configuration: '$(Pipeline.Workspace)/Infra-Folder/deployment.yaml'
+  #           displayName: 'Deploy to Kubernetes'
