@@ -15,12 +15,16 @@ steps:
     jdkVersionOption: '11'
     checkLatest: true
 
+- script: |
+    ./gradlew build
+  displayName: 'Build with Gradle'
+
 - task: Docker@2
   inputs:
-    command: 'buildAndPush'
-    repository: 'forzastorageaccount1.azurecr.io/java-webapp'
-    dockerfile: '**/Dockerfile'
     containerRegistry: 'ForzaDockerRegistryConnection'
+    repository: 'forza-dc/java-webapp'
+    command: 'buildAndPush'
+    Dockerfile: '**/Dockerfile'
     tags: |
       $(Build.BuildId)
 
@@ -29,11 +33,3 @@ steps:
     pathToPublish: '$(Build.ArtifactStagingDirectory)'
     artifactName: 'drop'
     publishLocation: 'Container'
-
-- task: AzureCLI@2
-  inputs:
-    azureSubscription: 'ForzaAzureRMConnection'
-    scriptType: 'bash'
-    scriptLocation: 'inlineScript'
-    inlineScript: |
-      az storage blob upload-batch -d artifacts -s $(Build.ArtifactStagingDirectory) --account-name forzastorageaccount1 --auth-mode login
