@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: java-webapp
-        image: your-docker-repo/java-webapp:latest
+        image: stforza/java-webapp:latest
         ports:
         - containerPort: 8080
 ---
