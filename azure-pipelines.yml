@@ -22,6 +22,7 @@ steps:
     jdkSourceOption: 'PreInstalled'
 
 - script: |
+    chmod +x gradlew
     ./gradlew build
   displayName: 'Build with Gradle'
 
