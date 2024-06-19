@@ -20,17 +20,11 @@ stages:
             inputs:
               buildType: 'current'
               targetPath: '$(Pipeline.Workspace)'
-
-          - task: UsePythonVersion@0
-            inputs:
-              versionSpec: '3.x'
-              addToPath: true
-
           - script: |
-              python -m pip install --upgrade pip
-              pip install terraform
+              curl -LO "https://releases.hashicorp.com/terraform/1.0.3/terraform_1.0.3_linux_amd64.zip"
+              unzip terraform_1.0.3_linux_amd64.zip
+              sudo mv terraform /usr/local/bin/
             displayName: 'Install Terraform'
-
           - task: AzureCLI@2
             inputs:
               azureSubscription: 'ForzaAzureRMConnection'
@@ -43,7 +37,6 @@ stages:
                 terraform apply -auto-approve
             workingDirectory: Infra-Folder
             displayName: 'Provision Infrastructure'
-
           - task: Kubernetes@1
             inputs:
               connectionType: 'Azure Resource Manager'
@@ -65,17 +58,11 @@ stages:
             inputs:
               buildType: 'current'
               targetPath: '$(Pipeline.Workspace)'
-
-          - task: UsePythonVersion@0
-            inputs:
-              versionSpec: '3.x'
-              addToPath: true
-
           - script: |
-              python -m pip install --upgrade pip
-              pip install terraform
+              curl -LO "https://releases.hashicorp.com/terraform/1.0.3/terraform_1.0.3_linux_amd64.zip"
+              unzip terraform_1.0.3_linux_amd64.zip
+              sudo mv terraform /usr/local/bin/
             displayName: 'Install Terraform'
-
           - task: AzureCLI@2
             inputs:
               azureSubscription: 'ForzaAzureRMConnection'
@@ -88,7 +75,6 @@ stages:
                 terraform apply -auto-approve
             workingDirectory: Infra-Folder
             displayName: 'Provision Infrastructure'
-
           - task: Kubernetes@1
             inputs:
               connectionType: 'Azure Resource Manager'
