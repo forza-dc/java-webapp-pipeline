@@ -32,8 +32,3 @@ resource "azurerm_kubernetes_cluster" "aks" {
 output "kube_config" {
   value = azurerm_kubernetes_cluster.aks.kube_config_raw
 }
-
-variable "subscription_id" {}
-variable "client_id" {}
-variable "client_secret" {}
-variable "tenant_id" {}
