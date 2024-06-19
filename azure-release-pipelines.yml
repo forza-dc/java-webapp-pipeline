@@ -16,14 +16,13 @@ stages:
         pool:
           vmImage: 'ubuntu-latest'
         steps:
-          - task: DownloadPipelineArtifact@2
+          - task: AzureCLI@2
             inputs:
-              buildType: 'specific'
-              project: 'Java-App-1'
-              pipeline: 'Java-App-1'
-              runVersion: 'latest'
-              artifactName: 'drop'
-              targetPath: '$(Pipeline.Workspace)/drop'
+              azureSubscription: 'ForzaAzureRMConnection'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                az storage blob download-batch -d $(Pipeline.Workspace)/drop -s artifacts --account-name forzastorageaccount1 --account-key $storageAccountKey
           - script: |
               curl -LO "https://releases.hashicorp.com/terraform/1.0.3/terraform_1.0.3_linux_amd64.zip"
               unzip terraform_1.0.3_linux_amd64.zip
@@ -51,14 +50,13 @@ stages:
         pool:
           vmImage: 'ubuntu-latest'
         steps:
-          - task: DownloadPipelineArtifact@2
+          - task: AzureCLI@2
             inputs:
-              buildType: 'specific'
-              project: 'Java-App-1'
-              pipeline: 'Java-App-1'
-              runVersion: 'latest'
-              artifactName: 'drop'
-              targetPath: '$(Pipeline.Workspace)/drop'
+              azureSubscription: 'ForzaAzureRMConnection'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                az storage blob download-batch -d $(Pipeline.Workspace)/drop -s artifacts --account-name forzastorageaccount1 --account-key $storageAccountKey
           - script: |
               curl -LO "https://releases.hashicorp.com/terraform/1.0.3/terraform_1.0.3_linux_amd64.zip"
               unzip terraform_1.0.3_linux_amd64.zip
