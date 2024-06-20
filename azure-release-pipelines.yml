@@ -80,7 +80,7 @@ stages:
               connectionType: 'kubernetesServiceConnection'
               kubernetesServiceConnection: 'ForzaAKS-java'
               namespace: 'dev'
-              manifests: '$(Pipeline.Workspace)/Infra-Folder/deployment.yaml'
+              manifests: '$(System.DefaultWorkingDirectory)/Infra-Folder/deployment.yaml'
 
 
           # - task: Kubernetes@1
