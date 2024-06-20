@@ -73,11 +73,6 @@ stages:
               workingDirectory: '$(System.DefaultWorkingDirectory)/Infra-Folder'
               environmentServiceName: 'ForzaAzureRMConnection'
               allowTelemetryCollection: false
-          # - script: |
-          #     terraform init
-          #     terraform apply -auto-approve
-          #   workingDirectory: Infra-Folder
-          #   displayName: 'Provision Infrastructure'
 
           - task: KubernetesManifest@1
             inputs:
