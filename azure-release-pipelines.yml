@@ -45,18 +45,16 @@ stages:
           - task: TerraformInstaller@2
             inputs:
               terraformVersion: 'latest'
-
           - task: TerraformCLI@2
             inputs:
               command: 'init'
-              workingDirectory: '(System.DefaultWorkingDirectory)/Infra-Folder'
+              workingDirectory: '$(System.DefaultWorkingDirectory)/Infra-Folder'
               backendType: 'azurerm'
               backendServiceArm: 'ForzaAzureRMConnection'
               backendAzureRmResourceGroupName: 'ForzaResourceGroup'
               backendAzureRmStorageAccountName: 'devopstfjava'
               backendAzureRmContainerName: 'forzaaksjavadevops'
               allowTelemetryCollection: false
-
           - task: TerraformCLI@2
             inputs:
               command: 'plan'
