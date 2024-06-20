@@ -5,7 +5,7 @@ provider "azurerm" {
 }
 
 resource "azurerm_resource_group" "aks" {
-  name     = "ForzaResourceGroup"
+  name     = "ForzaResourceGroup-java"
   location = "East US"
 }
 
