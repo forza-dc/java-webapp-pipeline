@@ -71,17 +71,25 @@ stages:
           #     terraform apply -auto-approve
           #   workingDirectory: Infra-Folder
           #   displayName: 'Provision Infrastructure'
-
-          - task: Kubernetes@1
+          - task: KubernetesManifest@1
             inputs:
-              connectionType: 'Azure Resource Manager'
-              azureSubscriptionEndpoint: 'ForzaAzureRMConnection'
+              action: 'deploy'
+              connectionType: 'kubernetesServiceConnection'
+              kubernetesServiceConnection: 'ForzaAKS-java'
               namespace: 'dev'
-              command: 'apply'
-              useConfigurationFile: true
-              configurationType: 'yaml'
-              configuration: '$(Pipeline.Workspace)/Infra-Folder/deployment.yaml'
-            displayName: 'Deploy to Kubernetes'
+              manifests: '$(Pipeline.Workspace)/Infra-Folder/deployment.yaml'
+
+
+          # - task: Kubernetes@1
+          #   inputs:
+          #     connectionType: 'Azure Resource Manager'
+          #     azureSubscriptionEndpoint: 'ForzaAzureRMConnection'
+          #     namespace: 'dev'
+          #     command: 'apply'
+          #     useConfigurationFile: true
+          #     configurationType: 'yaml'
+          #     configuration: '$(Pipeline.Workspace)/Infra-Folder/deployment.yaml'
+          #   displayName: 'Deploy to Kubernetes'
 
   # - stage: Prod
   #   jobs:
