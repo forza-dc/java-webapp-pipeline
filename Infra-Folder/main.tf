@@ -9,7 +9,7 @@ resource "azurerm_resource_group" "aks" {
 }
 
 resource "azurerm_kubernetes_cluster" "aks" {
-  name                = "ForzaAKSCluster"
+  name                = "ForzaAKSCluster-java"
   location            = azurerm_resource_group.aks.location
   resource_group_name = azurerm_resource_group.aks.name
   dns_prefix          = "forzaaks"
