@@ -49,7 +49,7 @@ stages:
           - task: TerraformCLI@2
             inputs:
               command: 'init'
-              workingDirectory: '(System.DefaultWorkingDirectory)/Infra-Folder'
+              workingDirectory: '$(System.DefaultWorkingDirectory)/Infra-Folder'
               backendType: 'azurerm'
               backendServiceArm: 'ForzaAzureRMConnection'
               ensureBackend: true
