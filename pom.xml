@@ -34,7 +34,7 @@
         <configuration>
           <archive>
             <manifest>
-              <mainClass>com.microsoft.demo</mainClass>
+              <mainClass>com.microsoft.demo.Demo</mainClass>
             </manifest>
           </archive>
         </configuration>
