@@ -4,6 +4,24 @@ pool:
   vmImage: 'ubuntu-latest'
 
 steps:
+- checkout: self
+  fetchDepth: 0
+
+- script: |
+    echo "Cleaning workspace..."
+    git clean -fdx
+  displayName: 'Clean Workspace'
+
+- script: |
+    echo "Listing source directory contents"
+    ls -la $(Build.SourcesDirectory)
+  displayName: 'List source directory contents'
+
+- script: |
+    echo "Printing git log"
+    git log -n 5
+  displayName: 'Print git log'
+
 - task: Maven@3
   inputs:
     mavenPomFile: 'pom.xml'
@@ -27,5 +45,7 @@ steps:
     repository: 'stforza/java-webapp'
     command: 'buildAndPush'
     Dockerfile: '**/Dockerfile'
+    buildContext: '$(Build.SourcesDirectory)'
     tags: |
       $(Build.BuildId)
+    arguments: '--no-cache'
