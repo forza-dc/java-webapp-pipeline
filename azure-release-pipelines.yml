@@ -52,11 +52,11 @@ stages:
               workingDirectory: '$(System.DefaultWorkingDirectory)/Infra-Folder'
               backendType: 'azurerm'
               backendServiceArm: 'ForzaAzureRMConnection'
-              ensureBackend: true
               backendAzureRmResourceGroupName: 'ForzaResourceGroup'
               backendAzureRmResourceGroupLocation: 'eastus'
               backendAzureRmStorageAccountName: 'devopstfjava'
               backendAzureRmContainerName: 'forzaaksjavadevops'
+              backendAzureRmKey: 'terraform.tfstate'
               allowTelemetryCollection: false
 
           - task: TerraformCLI@2
