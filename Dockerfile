@@ -1,5 +1,5 @@
 FROM openjdk:11-jre-slim
 WORKDIR /app
-COPY target/helloworld.jar /app/helloworld.jar
+COPY target/spring-boot-docker-complete-0.0.1-SNAPSHOT.jar /app/spring-boot-docker-complete-0.0.1-SNAPSHOT.jar
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "/app/helloworld.jar"]
+ENTRYPOINT ["java", "-jar", "/app/spring-boot-docker-complete-0.0.1-SNAPSHOT.jar"]
